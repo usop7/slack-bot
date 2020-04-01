@@ -2,23 +2,17 @@ const qs = require('querystring');
 const fetch = require('node-fetch');
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const VERIFICATION_TOKEN = process.env.VERIFICATION_TOKEN;
-const NEWS_API_KEY = process.env.API_KEY;
+const NEWS_API_KEY = process.env.NEWS_API_KEY;
 
-// Verify Url
-const verifyUrl = (event) => {
-  return new Promise((resolve, reject) => {
-    if (event.type === 'url_verification') {
-      resolve(event.challenge);
-    }
-    resolve(event);
-  });
-}
 
 // Make sure it doesn't process for bot messages
 const checkBot = (event) => {
-  if (!event.event.bot_id) {
-    return event;
-  }
+  return new Promise((resolve, reject) => {
+	if (event.event.bot_id) {
+      reject('Bot Message');
+    }
+    resolve(event);
+  });
 }
 
 // Verify Token
@@ -32,7 +26,7 @@ const verifyToken = (event) => {
 }
 
 // Helper method to format date as 'yyyy-mm-dd'
-formatDate = (date) => {
+const formatDate = (date) => {
   let d = new Date(date),
     month = '' + (d.getMonth() + 1),
     day = '' + d.getDate(),
@@ -51,10 +45,12 @@ const getNewsData = (event) => {
   const keyword = event.event.text.trim();
   let oneWeekAgo = new Date().setDate(new Date().getDate() - 7);
   console.log('requesting news about' + keyword);
-  return fetch(`https://content.guardianapis.com/search?q=${keyword}&from-date=${formatDate(oneWeekAgo)}&api-key=${NEWS_API_KEY}`)
+  const query = `https://content.guardianapis.com/search?q=${keyword}&from-date=${formatDate(oneWeekAgo)}&api-key=${NEWS_API_KEY}`;
+  console.log(query);
+  return fetch(query)
   .then(res => res.json())
   .then(data => data.response.results)
-  .catch(err => err);
+  .catch(err => console.log(err));
 }
 
 // Format News Data
@@ -88,13 +84,18 @@ const post = (channel, user, data) => {
 
 // Lambda Handler
 exports.bot = (event, context, callback) => {
+
+  // slack url verification
+  if (event.type === 'url_verification') {
+    callback(null, event.challenge);
+  }
+  
   const text = event.event.text;
-  const keyword = /^<@[A-Z0-9]*>(.+)/.exec(text)[1].trim();
+  const keyword = /^<@[A-Z0-9]*>(.+)/.exec(text)[0].trim();
   const channel = event.event.channel;
   const user = event.event.user;
 
-  verifyUrl(event)
-  .then(checkBot)
+  checkBot(event)
   .then(verifyToken)
   .then(getNewsData)
   .then(formatNewsData.bind(null, user, keyword))

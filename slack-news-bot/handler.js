@@ -58,10 +58,10 @@ const formatNewsData = (user, keyword, data) => {
   return new Promise((resolve, reject) => {
     let str = '';
     if (data.length === 0) {
-      str = `<@${user}> There is no recent news about '${keyword}'`;
+      str = `Hey <@${user}>, There is no recent news about '${keyword}'`;
       resolve(str);
     } else {
-      str = `<@${user}> Here is the recent news about '${keyword}'\n\n`;
+      str = `Hey <@${user}>, News '${keyword}' are here!\n\n`;
     }
     for (const news of data) {
       str += `${news.webTitle} (${news.webPublicationDate})\n${news.webUrl}\n\n`;

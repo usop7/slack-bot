@@ -91,7 +91,7 @@ exports.bot = (event, context, callback) => {
   }
   
   const text = event.event.text;
-  const keyword = /^<@[A-Z0-9]*>(.+)/.exec(text)[0].trim();
+  const keyword = /^<@[A-Z0-9]*>(.+)/.exec(text)[1].trim();
   const channel = event.event.channel;
   const user = event.event.user;
 

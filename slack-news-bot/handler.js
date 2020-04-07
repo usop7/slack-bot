@@ -97,7 +97,7 @@ exports.bot = (event, context, callback) => {
 
   checkBot(event)
   .then(verifyToken)
-  .then(getNewData)
+  .then(getNewData) 
   .then(formatNewsData.bind(null, user, keyword))
   .then(post.bind(null, channel, user))
   .catch(callback)
